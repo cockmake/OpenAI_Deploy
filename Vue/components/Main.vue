@@ -2,6 +2,7 @@
 import { onMounted, ref} from 'vue'
 import axios from "axios";
 import io from 'socket.io-client'
+import { ElNotification } from 'element-plus'
 let question = ref('')
 let answer = ref('')
 let user_id = Math.random().toString(36).slice(-8)
@@ -14,7 +15,11 @@ function clsQue() {
   question.value = ''
 }
 socket.on('recAns',(resp)=>{
-  answer.value += resp['msg']
+
+  if(resp['msg'] === '__new__' && loadShow)loadShow.value = false
+  else if(resp['msg'] === 'failure'){
+    open()
+  }else answer.value += resp['msg']
 })
 socket.on('connect', () => {
   console.log('连接上了')
@@ -42,6 +47,7 @@ function getAns() {
     return
   }
   answer.value = ''
+  loadShow.value = true
   axios.post('/getAns/'+ user_id, {"prompt": question.value}).then(async resp => {
     if (resp.data['msg'] === 'failure'){
       alert('单次请求上限为10次, 刷新浏览器即可重置')
@@ -52,10 +58,22 @@ function getAns() {
     console.log(err)
   })
 }
+
+let loadShow = ref(false)
+const open = () => {
+  ElNotification({
+    title: '错误',
+    message: '服务器拥堵, 响应时间超过30s, 请再次尝试',
+    type: 'error',
+  })
+}
 </script>
 
 <template>
-  <div class="common-layout">
+  <div class="common-layout"
+       v-loading="loadShow"
+       element-loading-text="等待答复中..."
+       element-loading-background="rgba(0, 0, 0, 0.8)">
     <el-container style="height: 100vh">
       <el-header class="header">
         <div style="display: flex; flex-wrap: wrap; height: 100%">
@@ -64,7 +82,6 @@ function getAns() {
             <el-button @click="getAns" style="width: 80px; height: 40px; margin: 5px;">提问</el-button>
             <el-button @click="clsQue" style="width: 80px; height: 40px; margin: 5px;">清空</el-button>
           </div>
-
         </div>
 
       </el-header>
