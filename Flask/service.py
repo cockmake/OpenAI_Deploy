@@ -39,11 +39,11 @@ user_time = {
 
 def sendAns(prompt, user_id):
     body = {
-        'model': "text-davinci-003",
+        'model': "text-curie-001",
         'prompt': prompt,
         'max_tokens': 2000,
         'n': 1,
-        'top_p': 0.7,
+        'top_p': 1,
         'temperature': 0.7
     }
     try:
