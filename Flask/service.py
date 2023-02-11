@@ -42,9 +42,8 @@ def sendAns(prompt, user_id):
         'model': "text-davinci-003",
         'prompt': prompt,
         'max_tokens': 2000,
-        'stream': True,
         'n': 1,
-        'top_p': 0.5,
+        'top_p': 0.7,
         'temperature': 0.7
     }
     try:
@@ -53,8 +52,7 @@ def sendAns(prompt, user_id):
         time.sleep(2)
         resp = openai.Completion.create(**body)
 
-    for data in resp:
-        socketio.emit('recAns', data={'msg': data['choices'][0]['text']}, to=user_id)
+    socketio.emit('recAns', data={'msg': data['choices'][0]['text']}, to=user_id)
 
 @app.route('/getAns/<string:user_id>', methods=['POST'])
 def getAns(user_id):
